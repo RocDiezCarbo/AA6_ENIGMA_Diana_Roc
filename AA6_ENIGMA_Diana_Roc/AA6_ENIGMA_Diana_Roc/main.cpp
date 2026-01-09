@@ -1,9 +1,9 @@
 #include <iostream>
+#include <fstream>
 
 #include "const.h"
 #include "menu.h"
 
 void main() {
-	printMenu();
-	selectOption();
+	menu();
 }
