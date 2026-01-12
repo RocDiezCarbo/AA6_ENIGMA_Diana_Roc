@@ -129,6 +129,9 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="menu.cpp" />
+    <ClCompile Include="rotors.cpp" />
+    <ClCompile Include="desifratge.cpp" />
+    <ClCompile Include="xifratge.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="const.h" />
