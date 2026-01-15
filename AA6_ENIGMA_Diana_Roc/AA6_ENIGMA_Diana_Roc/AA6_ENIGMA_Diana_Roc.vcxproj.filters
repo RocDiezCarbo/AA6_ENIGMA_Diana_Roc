@@ -30,9 +30,21 @@
     <ClCompile Include="rotors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="const.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rotors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="desifratge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xifratge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="const.h">

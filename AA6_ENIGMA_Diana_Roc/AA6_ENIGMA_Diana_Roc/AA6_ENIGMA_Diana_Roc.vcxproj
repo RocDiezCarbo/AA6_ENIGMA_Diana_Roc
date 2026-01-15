@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="const.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="rotors.cpp" />
@@ -134,8 +135,11 @@
     <ClCompile Include="xifratge.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="rotors.h" />
+    <ClInclude Include="desifratge.h" />
     <ClInclude Include="const.h" />
     <ClInclude Include="menu.h" />
+    <ClInclude Include="xifratge.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

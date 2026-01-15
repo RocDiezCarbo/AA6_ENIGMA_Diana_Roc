@@ -1,5 +1,6 @@
 #include <iostream>
 #include "const.h"
 
-void introduirMisatge() {
+void clearScreen() {
+	system("cls");
 }
