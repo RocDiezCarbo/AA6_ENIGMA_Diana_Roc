@@ -24,12 +24,24 @@
     <ClCompile Include="const.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="enigma.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rotors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="const.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="enigma.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rotors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
