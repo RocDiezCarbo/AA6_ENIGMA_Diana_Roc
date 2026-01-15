@@ -3,5 +3,5 @@
 #include "const.h"
 
 void printMenu();
-int llegirOpcio();
+int selectOption();
 void menu();

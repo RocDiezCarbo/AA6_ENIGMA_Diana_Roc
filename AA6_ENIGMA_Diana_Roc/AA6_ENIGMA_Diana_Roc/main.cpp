@@ -4,6 +4,7 @@
 #include "const.h"
 #include "menu.h"
 
-void main() {
-	menu();
+int main() {
+    menu();
+    return 0;
 }
