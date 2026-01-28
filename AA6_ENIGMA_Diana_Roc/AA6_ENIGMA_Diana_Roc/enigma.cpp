@@ -16,6 +16,52 @@ static char indexALletra(int idx) {
     return 'A' + idx;
 }
 
+
+std::string normalitzaText(const std::string& input) {
+    std::string resultat;
+    resultat.reserve(input.size());
+
+    for (unsigned char uc : input) {
+        char c = static_cast<char>(uc);
+
+        // Convertim a majúscula ASCII sense dependre de locales
+        if (c >= 'a' && c <= 'z') c = static_cast<char>(c - 'a' + 'A');
+
+        // Ens quedem estrictament amb A..Z
+        if (c >= 'A' && c <= 'Z') {
+            resultat.push_back(c);
+        }
+    }
+    return resultat;
+}
+
+bool llegirIMagatzemarMissatge(const std::string& ruta) {
+    std::cout << "Introdueix el missatge a xifrar:\n> ";
+
+    std::string entrada;
+    // Important: consumim espais i salts de línia pendents (p. ex. després d'un std::cin >> option)
+    std::getline(std::cin >> std::ws, entrada);
+
+    std::string net = normalitzaText(entrada);
+
+    std::ofstream f(ruta, std::ios::out | std::ios::trunc);
+    if (!f) {
+        std::cerr << "[ERROR] No s'ha pogut crear/obrir " << ruta << "\n";
+        return false;
+    }
+
+    f << net;
+    if (!f) {
+        std::cerr << "[ERROR] Error escrivint a " << ruta << "\n";
+        return false;
+    }
+
+    std::cout << "[OK] Missatge guardat a \"" << ruta << "\" ("
+        << net.size() << " lletres)\n";
+    return true;
+}
+
+
 // Llegeix el fitxer "Missatge.txt" i prepara el text 
 static bool llegirMissatge(std::string& text) {
     std::ifstream f("Missatge.txt");
@@ -24,26 +70,22 @@ static bool llegirMissatge(std::string& text) {
         return false;
     }
 
-    std::string linia;
-    text = "";
+    std::string contingut, linia;
     while (std::getline(f, linia)) {
-        for (char c : linia) {
-            // Convertir a majúscula si és lletra
-            if (std::isalpha(c)) {
-                text += std::toupper(c);
-            }
-            // Ignorar tot el demés 
-        }
+        contingut += linia;
+        contingut += '\n';
     }
     f.close();
 
+    text = normalitzaText(contingut);
+
     if (text.empty()) {
-        std::cout << "[ERROR] Missatge.txt: Fitxer buit\n";
+        std::cout << "[ERROR] Missatge.txt: Fitxer buit o sense lletres A-Z\n";
         return false;
     }
-
     return true;
 }
+
 
 
 static bool demanarConfiguracioInicial(int* posicions) {
@@ -200,7 +242,7 @@ bool desxifrarMissatge() {
 
     for (char c : xifrat) {
         avancaRotors(posicions);
-        char desxifrada = desxifraLletra(c, posicions);
+        char desxifrada = xifraLletra(c, posicions);
         out << desxifrada;
     }
 
@@ -222,39 +264,58 @@ void editarRotor() {
     }
 
     int idx = numRotor - 1;
+
     std::string novaPermutacio;
-    std::cout << "Introdueix la nova permutacio (26 majuscules A-Z): ";
+    std::cout << "Introdueix la nova permutacio (26 majuscules A-Z, sense repetir): ";
     std::cin >> novaPermutacio;
 
-    if (novaPermutacio.length() != 26) {
-        std::cout << "[ERROR] Permutacio incorrecta, calen 26 lletres\n";
+    // 1) Validació de mida
+    if (novaPermutacio.size() != 26) {
+        std::cout << "[ERROR] Permutacio incorrecta: calen 26 lletres\n";
         return;
     }
 
+    // 2) Validació A-Z i unicitat
+    bool vist[26] = { false };
     for (char c : novaPermutacio) {
         if (c < 'A' || c > 'Z') {
-            std::cout << "[ERROR] Permutacio incorrecta, calen 26 lletres uniques A-Z\n";
+            std::cout << "[ERROR] Permutacio incorrecta: calen lletres A-Z\n";
             return;
         }
+        int k = c - 'A';
+        if (vist[k]) {
+            std::cout << "[ERROR] Permutacio incorrecta: lletres repetides\n";
+            return;
+        }
+        vist[k] = true;
     }
 
-    // Guardar a fitxer
+    // 3) Determinar el fitxer del rotor (mantinc els teus noms actuals)
     std::string nomFitxer;
-    if (numRotor == 1) 
-        nomFitxer = "rotor_I.txt";
-    else if (numRotor == 2) 
-        nomFitxer = "rotor_II.txt";
-    else 
-        nomFitxer = "rotor_III.txt";
+    if (numRotor == 1) nomFitxer = "rotor_I.txt";
+    else if (numRotor == 2) nomFitxer = "rotor_II.txt";
+    else nomFitxer = "rotor_III.txt";
 
-    std::ofstream out(nomFitxer);
+    // 4) Conservar el notch actual (2a línia)
+    char notchActual = static_cast<char>('A' + getRotorNotch(idx));
+
+    // 5) Guardar el rotor amb 2 línies: cablejat + notch
+    std::ofstream out(nomFitxer, std::ios::out | std::ios::trunc);
     if (!out.is_open()) {
-        std::cout << "[ERROR] No s'ha pogut guardar el rotor\n";
+        std::cout << "[ERROR] " << nomFitxer << ": no s'ha pogut guardar\n";
         return;
     }
 
-    out << novaPermutacio << "\n";
+    out << novaPermutacio << "\n" << notchActual << "\n";
     out.close();
 
-    std::cout << "Rotor " << numRotor << " guardat a \"" << nomFitxer << "\"\n";
+    // 6) Recarregar a memòria perquè s'apliqui immediatament
+    if (!carregarRotor(nomFitxer.c_str(), idx)) {
+        std::cout << "[ERROR] " << nomFitxer
+            << ": guardat pero no s'ha pogut recarregar\n";
+        return;
+    }
+
+    std::cout << "[OK] Rotor " << numRotor << " guardat a \"" << nomFitxer
+        << "\" (notch " << notchActual << ")\n";
 }

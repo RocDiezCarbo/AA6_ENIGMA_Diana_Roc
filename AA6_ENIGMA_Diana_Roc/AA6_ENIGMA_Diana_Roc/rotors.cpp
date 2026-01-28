@@ -16,107 +16,104 @@ static int lletraAIndex(char c) { return c - 'A'; }
 
 // Indica si una línia del fitxer és "útil": no buida, no només espais i no comença per '#'
 static bool esLiniaUtil(const std::string& s) {
-    if (s.empty()) return false;  // línia completament buida
-    // Cerca el primer caràcter que no sigui espai/tab/salt de línia
+    if (s.empty()) return false;
     size_t i = s.find_first_not_of(" \t\r\n");
-    if (i == std::string::npos) return false;  // només hi ha blancs
-    return s[i] != '#';  // si comença per '#', la considerem comentari
+    if (i == std::string::npos) return false;
+    return s[i] != '#';
 }
 
 // Llegeix del fitxer la següent línia "útil" (no buida ni comentari)
 static bool llegirLiniaUtil(std::ifstream& f, std::string& out) {
     while (std::getline(f, out)) {
-        // Elimina '\r' final en cas de fitxers amb format Windows
-        if (!out.empty() && out.back() == '\r') out.pop_back();
-        // Retorna la primera línia que sigui útil
+        if (!out.empty() && out.back() == '\r') out.pop_back(); // Windows CRLF
         if (esLiniaUtil(out)) return true;
     }
-    // No s'ha trobat cap línia útil abans d'arribar al final
     return false;
 }
 
-// Comprova que una línia té EXACTAMENT 26 majúscules (A..Z)
-// S'utilitza per validar el cablejat de rotors i reflector
-static bool validar26Majuscules(const std::string& s) {
+// Valida que sigui una permutació exacta de 26 lletres majúscules A..Z, sense repeticions
+static bool validarPermutacioAZ(const std::string& s) {
     if (s.size() != 26) return false;
-    for (char c : s) if (c < 'A' || c > 'Z') return false;
+
+    bool vist[26] = { false };
+    for (char c : s) {
+        if (c < 'A' || c > 'Z') return false;
+        int k = c - 'A';
+        if (vist[k]) return false;
+        vist[k] = true;
+    }
     return true;
 }
 
 // Comprova que la línia té com a mínim un caràcter i que el primer és una majúscula
-// S'utilitza per validar la lletra del notch
 static bool validar1Majuscula(const std::string& s) {
-    if (s.size() < 1) return false;
+    if (s.empty()) return false;
     char c = s[0];
     return (c >= 'A' && c <= 'Z');
 }
 
 // Carrega un sol rotor des del fitxer 'nomFitxer' a l'índex 'idxRotor'
 bool carregarRotor(const char* nomFitxer, int idxRotor) {
-    // Comprovació de rang de l'índex (0..NUM_ROTORS-1)
     if (idxRotor < 0 || idxRotor >= NUM_ROTORS) {
-        std::cout << "Error: idxRotor invalid\n";
+        std::cout << "[ERROR] idxRotor invalid\n";
         return false;
     }
 
-    // Obrim el fitxer del rotor
     std::ifstream f(nomFitxer);
     if (!f.is_open()) {
-        std::cout << "Error: no s'ha pogut obrir " << nomFitxer << "\n";
+        std::cout << "[ERROR] " << nomFitxer << ": no s'ha pogut obrir\n";
         return false;
     }
 
     std::string linia;
 
-    // Ha de ser una permutació de 26 majúscules
-    if (!llegirLiniaUtil(f, linia) || !validar26Majuscules(linia)) {
-        std::cout << "Error: permutacio invalida a " << nomFitxer << "\n";
+    // Línia 1: cablejat (permutació de 26 lletres úniques)
+    if (!llegirLiniaUtil(f, linia) || !validarPermutacioAZ(linia)) {
+        std::cout << "[ERROR] " << nomFitxer
+            << ": permutacio incorrecta — calen 26 lletres úniques A–Z\n";
         return false;
     }
-    // Guardem cada lletra com a índex 0..25 al vector del rotor
+
     for (int i = 0; i < 26; i++)
         rotors[idxRotor][i] = lletraAIndex(linia[i]);
 
-    // ---- línia 2: notch del rotor (opcional) ----
-    // Intentem llegir una segona línia útil
+    // Línia 2 (opcional): notch
     if (llegirLiniaUtil(f, linia)) {
-        // Si hi ha línia, ha de començar per una majúscula
         if (!validar1Majuscula(linia)) {
-            std::cout << "Error: notch invalid a " << nomFitxer << "\n";
+            std::cout << "[ERROR] " << nomFitxer << ": notch invalid\n";
             return false;
         }
-        // Guardem la lletra del notch com a índex 0..25
         notches[idxRotor] = lletraAIndex(linia[0]);
     }
     else {
-        // Si no hi ha segona línia, posem notch per defecte a 'Z'
-        notches[idxRotor] = lletraAIndex('Z');
+        notches[idxRotor] = lletraAIndex('Z'); // per defecte
     }
 
-    return true;  // càrrega correcta
+    return true;
 }
 
 // Carrega el reflector des del fitxer 'nomFitxer'
 bool carregarReflector(const char* nomFitxer) {
     std::ifstream f(nomFitxer);
     if (!f.is_open()) {
-        std::cout << "Error: no s'ha pogut obrir " << nomFitxer << "\n";
+        std::cout << "[ERROR] " << nomFitxer << ": no s'ha pogut obrir\n";
         return false;
     }
 
     std::string linia;
-    // Només cal una línia útil amb 26 majúscules (la permutació del reflector)
-    if (!llegirLiniaUtil(f, linia) || !validar26Majuscules(linia)) {
-        std::cout << "Error: permutacio de reflector invalida\n";
+
+    // Reflector: també ha de ser una permutació de 26 lletres úniques
+    if (!llegirLiniaUtil(f, linia) || !validarPermutacioAZ(linia)) {
+        std::cout << "[ERROR] " << nomFitxer
+            << ": permutacio incorrecta — calen 26 lletres úniques A–Z\n";
         return false;
     }
-    // Guardem la permutació al vector 'reflector'
+
     for (int i = 0; i < 26; i++)
         reflector[i] = lletraAIndex(linia[i]);
 
-    return true;  // reflector carregat correctament
+    return true;
 }
-
 
 // Retorna el cablejat del rotor 'rotor' a la posició 'index'
 int getRotor(int rotor, int index) { return rotors[rotor][index]; }
@@ -126,3 +123,19 @@ int getRotorNotch(int rotor) { return notches[rotor]; }
 
 // Retorna el cablejat del reflector a la posició 'index'
 int getReflector(int index) { return reflector[index]; }
+
+// Avança rotors (mode notch)
+void avancaRotors(int* posicions) {
+    // Avança rotor 0 sempre
+    posicions[0] = (posicions[0] + 1) % 26;
+
+    // Si rotor 0 arriba al notch, avança rotor 1
+    if (posicions[0] == getRotorNotch(0)) {
+        posicions[1] = (posicions[1] + 1) % 26;
+
+        // Si rotor 1 arriba al notch, avança rotor 2
+        if (posicions[1] == getRotorNotch(1)) {
+            posicions[2] = (posicions[2] + 1) % 26;
+        }
+    }
+}

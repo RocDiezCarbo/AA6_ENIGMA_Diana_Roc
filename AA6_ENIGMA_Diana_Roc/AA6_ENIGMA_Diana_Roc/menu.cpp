@@ -1,5 +1,6 @@
 #include <iostream>
 #include "menu.h"
+#include "enigma.h"
 
 void printMenu() {
     std::cout << "-------------------------------\n";
@@ -26,9 +27,13 @@ void menu() {
         option = selectOption();
 
         switch (option) {
-        case 1: std::cout << "Opcio 1\n"; break;
-        case 2: std::cout << "Opcio 2\n"; break;
-        case 3: std::cout << "Opcio 3\n"; break;
+        case 1:
+            if (llegirIMagatzemarMissatge("Missatge.txt")) {
+                xifrarMissatge();
+            }
+            break;
+        case 2: desxifrarMissatge(); break;
+        case 3: editarRotor(); break;
         case 4: std::cout << "Sortint...\n"; break;
         default: std::cout << "Opcio invalida.\n"; break;
         }

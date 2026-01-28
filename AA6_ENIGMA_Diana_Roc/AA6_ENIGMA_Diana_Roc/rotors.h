@@ -11,3 +11,5 @@ bool carregarReflector(const char* nomFitxer);
 int getRotor(int rotor, int index);
 int getRotorNotch(int rotor);
 int getReflector(int index);
+
+void avancaRotors(int* posicions);
