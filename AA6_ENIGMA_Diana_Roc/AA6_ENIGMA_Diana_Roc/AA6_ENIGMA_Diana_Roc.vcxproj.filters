@@ -21,10 +21,10 @@
     <ClCompile Include="menu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="xifratge.cpp">
+    <ClCompile Include="const.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="desifratge.cpp">
+    <ClCompile Include="enigma.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="rotors.cpp">
@@ -36,6 +36,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="const.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="enigma.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rotors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
